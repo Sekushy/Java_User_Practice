@@ -1,6 +1,14 @@
 package App;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import org.json.simple.JSONObject;
+
+import java.io.FileWriter;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -50,7 +58,7 @@ public class User {
         return currentDate;
     }
 
-    public static ArrayList<Integer> splitDate(String date) {
+    public ArrayList<Integer> splitDate(String date) {
         ArrayList<Integer> dates = new ArrayList<>();
 
         //cea mai simpla forma de lista, vector[]
@@ -65,7 +73,7 @@ public class User {
         return dates;
     }
 
-    public static ArrayList<Integer> splitDate(String date, String delimiter) {
+    public ArrayList<Integer> splitDate(String date, String delimiter) {
         ArrayList<Integer> dates = new ArrayList<>();
 
         String[] temp = date.split(delimiter);
@@ -78,7 +86,7 @@ public class User {
         return dates;
     }
 
-    public static int calculateAge(String currentDate, String birthDate) {
+    public int calculateAge(String currentDate, String birthDate) {
         ArrayList<Integer> formattedCurrentDate = splitDate(currentDate);
         ArrayList<Integer> formattedBirthDate = splitDate(birthDate);
         int ageYears = formattedCurrentDate.get(2) - formattedBirthDate.get(2);
@@ -95,9 +103,39 @@ public class User {
         return ageYears;
     }
 
+    public JSONObject convertUserToJsonObject() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("fullName", fullName);
+        jsonObject.put("birthDate", birthDate);
+        jsonObject.put("email", email);
+        jsonObject.put("age", age);
+        return jsonObject;
+    }
+
+    // Method is purely used in order to prettify the outputted json file.
+    // You can simply take this syntax at face value and not bother with it.
+    private String prettifyJsonObject(String uglyJsonString) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonElement je = JsonParser.parseString(uglyJsonString);
+        return gson.toJson(je);
+    }
+
+    public void writeUserToJsonFile() {
+        String fileName = "output\\output-" + OffsetDateTime.now().toString().replace(":", "-") + ".json";
+        String jsonPrettifiedString = prettifyJsonObject(convertUserToJsonObject().toJSONString());
+        try {
+            FileWriter myFileWriter = new FileWriter(fileName);
+            myFileWriter.write(jsonPrettifiedString);
+            myFileWriter.close();
+            System.out.println("File " + fileName + " has been successfully created.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public String toString() {
-        return "App.User {" + '\n' +
+        return "User {" + '\n' +
                 '\t' + "\"fullName\" : \"" + fullName + '\"' + ',' + '\n' +
                 '\t' + "\"birthDate\" : \"" + birthDate + '\"' + ',' + '\n' +
                 '\t' + "\"email\" : \"" + email + '\"' + ',' + '\n' +
